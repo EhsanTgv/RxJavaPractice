@@ -1,68 +1,41 @@
 package org.example;
 
-import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.Observer;
-import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Action;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.swing.*;
+import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
     public static void main(String[] args) {
-        Observable<String> observable = Observable.just("Item 1", "Item 2");
+        Observable<Integer> observable = Observable.range(2, 5);
 
-        List<Integer> numbers = new ArrayList<>();
-        numbers.add(1);
-        numbers.add(2);
+        observable.subscribe(item -> {
 
-        Observable<Integer> numberObservable = Observable.fromIterable(numbers);
+        });
 
-        Observer<Integer> numberObserver = new Observer<Integer>() {
-            @Override
-            public void onSubscribe(@NonNull Disposable d) {
+        Observable<Long> intervalObservable = Observable.interval(1, TimeUnit.SECONDS);
 
-            }
+        intervalObservable.subscribe(item -> {
 
-            @Override
-            public void onNext(@NonNull Integer integer) {
-                System.out.println(integer);
-            }
+        });
 
-            @Override
-            public void onError(@NonNull Throwable e) {
+        Observable<Long> timerObservable = Observable.timer(5, TimeUnit.SECONDS);
 
-            }
+        timerObservable.subscribe(item -> {
+            System.out.println("5 seconds passed");
+        });
 
-            @Override
-            public void onComplete() {
-                System.out.println("On complete called!");
-            }
-        };
+        Action action = () -> System.out.println("Hello world");
 
-        Observer<String> observer = new Observer<String>() {
-            @Override
-            public void onSubscribe(@NonNull Disposable d) {
+        Completable completable = Completable.fromAction(action);
 
-            }
+        completable.subscribe(() -> {
+            System.out.println("Action ends");
+        });
 
-            @Override
-            public void onNext(@NonNull String s) {
-                System.out.println(s);
-            }
-
-            @Override
-            public void onError(@NonNull Throwable e) {
-
-            }
-
-            @Override
-            public void onComplete() {
-                System.out.println("On complete called!");
-            }
-        };
-
-//        observable.subscribe(observer);
-        numberObservable.subscribe(numberObserver);
+        new Scanner(System.in).nextLine();
     }
 }
