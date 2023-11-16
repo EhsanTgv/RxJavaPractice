@@ -1,41 +1,88 @@
 package org.example;
 
-import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.functions.Action;
-
-import javax.swing.*;
-import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.MaybeObserver;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
 
 public class Main {
+
     public static void main(String[] args) {
-        Observable<Integer> observable = Observable.range(2, 5);
+        Single<String> single = createSingle();
+        single.subscribe(new SingleObserver<String>() {
+            @Override
+            public void onSubscribe(@NonNull Disposable d) {
 
-        observable.subscribe(item -> {
+            }
 
+            @Override
+            public void onSuccess(@NonNull String s) {
+                System.out.println(s);
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
+                System.out.println(e.getMessage());
+            }
         });
 
-        Observable<Long> intervalObservable = Observable.interval(1, TimeUnit.SECONDS);
+        Maybe<String> maybe = createMaybe();
+        maybe.subscribe(new MaybeObserver<String>() {
+            @Override
+            public void onSubscribe(@NonNull Disposable d) {
 
-        intervalObservable.subscribe(item -> {
+            }
 
+            @Override
+            public void onSuccess(@NonNull String s) {
+                System.out.println(s);
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+                System.out.println("No new content");
+            }
         });
+    }
 
-        Observable<Long> timerObservable = Observable.timer(5, TimeUnit.SECONDS);
+    private static Maybe<String> createMaybe() {
+        return Maybe.create(emitter -> {
+            String newContent = readFile();
 
-        timerObservable.subscribe(item -> {
-            System.out.println("5 seconds passed");
+            if (newContent != null) {
+                emitter.onSuccess(newContent);
+            } else {
+                emitter.onComplete();
+            }
         });
+    }
 
-        Action action = () -> System.out.println("Hello world");
+    private static String readFile() {
+        return "New content is here";
+//        return null;
+    }
 
-        Completable completable = Completable.fromAction(action);
+    public static Single<String> createSingle() {
+        return Single.create(emitter -> {
+            String user = fetchUser();
 
-        completable.subscribe(() -> {
-            System.out.println("Action ends");
+            if (user != null) {
+                emitter.onSuccess(user);
+            } else {
+                emitter.onError(new Exception("User not founded"));
+            }
         });
+    }
 
-        new Scanner(System.in).nextLine();
+    public static String fetchUser() {
+        return "John";
+//        return null;
     }
 }
