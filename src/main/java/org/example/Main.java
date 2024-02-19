@@ -1,88 +1,43 @@
 package org.example;
 
 import io.reactivex.rxjava3.annotations.NonNull;
-import io.reactivex.rxjava3.core.Maybe;
-import io.reactivex.rxjava3.core.MaybeObserver;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.core.SingleObserver;
+import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Action;
 
 public class Main {
 
     public static void main(String[] args) {
-        Single<String> single = createSingle();
-        single.subscribe(new SingleObserver<String>() {
+        Completable comparable = createCompletable();
+
+        comparable.subscribe(new CompletableObserver() {
             @Override
             public void onSubscribe(@NonNull Disposable d) {
-
-            }
-
-            @Override
-            public void onSuccess(@NonNull String s) {
-                System.out.println(s);
-            }
-
-            @Override
-            public void onError(@NonNull Throwable e) {
-                System.out.println(e.getMessage());
-            }
-        });
-
-        Maybe<String> maybe = createMaybe();
-        maybe.subscribe(new MaybeObserver<String>() {
-            @Override
-            public void onSubscribe(@NonNull Disposable d) {
-
-            }
-
-            @Override
-            public void onSuccess(@NonNull String s) {
-                System.out.println(s);
-            }
-
-            @Override
-            public void onError(@NonNull Throwable e) {
 
             }
 
             @Override
             public void onComplete() {
-                System.out.println("No new content");
+                System.out.println("Operation is complete");
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
+
             }
         });
     }
 
-    private static Maybe<String> createMaybe() {
-        return Maybe.create(emitter -> {
-            String newContent = readFile();
+    private static Completable createCompletable(){
+        return Completable.fromAction(deleteItemFromDBAction());
+    }
 
-            if (newContent != null) {
-                emitter.onSuccess(newContent);
-            } else {
-                emitter.onComplete();
+    private static Action deleteItemFromDBAction(){
+        return new Action(){
+            @Override
+            public void run() throws Exception {
+                System.out.println("Deleting item from DB");
             }
-        });
-    }
-
-    private static String readFile() {
-        return "New content is here";
-//        return null;
-    }
-
-    public static Single<String> createSingle() {
-        return Single.create(emitter -> {
-            String user = fetchUser();
-
-            if (user != null) {
-                emitter.onSuccess(user);
-            } else {
-                emitter.onError(new Exception("User not founded"));
-            }
-        });
-    }
-
-    public static String fetchUser() {
-        return "John";
-//        return null;
+        };
     }
 }
