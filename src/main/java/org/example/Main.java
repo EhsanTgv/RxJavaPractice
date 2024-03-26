@@ -1,43 +1,66 @@
 package org.example;
 
-import io.reactivex.rxjava3.annotations.NonNull;
-import io.reactivex.rxjava3.core.*;
-import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
+import static java.lang.Thread.sleep;
 
 public class Main {
 
     public static void main(String[] args) {
-        Completable comparable = createCompletable();
-
-        comparable.subscribe(new CompletableObserver() {
-            @Override
-            public void onSubscribe(@NonNull Disposable d) {
-
-            }
-
-            @Override
-            public void onComplete() {
-                System.out.println("Operation is complete");
-            }
-
-            @Override
-            public void onError(@NonNull Throwable e) {
-
-            }
-        });
+//        synchronousObservableExample();
+//        asyncObservableExample();
+        asyncFlowableExample();
     }
 
-    private static Completable createCompletable(){
-        return Completable.fromAction(deleteItemFromDBAction());
+    private static void synchronousObservableExample() {
+        Observable.range(1, 1000000)
+                .map(id -> new Item(id))
+                .subscribe(item -> {
+                    sleep(1000);
+                    System.out.println("Received MyItem " + item.id + "\n");
+                });
     }
 
-    private static Action deleteItemFromDBAction(){
-        return new Action(){
-            @Override
-            public void run() throws Exception {
-                System.out.println("Deleting item from DB");
-            }
-        };
+    private static void asyncObservableExample() {
+        Observable.range(1, 1000000)
+                .map(Item::new)
+                .observeOn(Schedulers.io())
+                .subscribe(item -> {
+                    sleep(1000);
+                    System.out.println("Received MyItem " + item.id + "\n");
+                });
+
+        try {
+            sleep(Long.MAX_VALUE);
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+    }
+
+    private static void asyncFlowableExample(){
+        Flowable.range(1,1000000)
+                .map(Item::new)
+                .observeOn(Schedulers.io())
+                .subscribe(item -> {
+                    sleep(1000);
+                    System.out.println("Received MyItem " + item.id + "\n");
+                });
+
+        try {
+            sleep(Long.MAX_VALUE);
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+    }
+}
+
+class Item {
+    int id;
+
+    public Item(int id) {
+        this.id = id;
+        System.out.println("Item is created " + id);
     }
 }
