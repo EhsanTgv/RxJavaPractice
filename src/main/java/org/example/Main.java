@@ -1,66 +1,41 @@
 package org.example;
 
-import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.observables.ConnectableObservable;
 
-import static java.lang.Thread.sleep;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 
-    public static void main(String[] args) {
-//        synchronousObservableExample();
-//        asyncObservableExample();
-        asyncFlowableExample();
+    public static void main(String[] args) throws InterruptedException {
+//        coldObservableExample();
+        hotObservableExample();
     }
 
-    private static void synchronousObservableExample() {
-        Observable.range(1, 1000000)
-                .map(id -> new Item(id))
-                .subscribe(item -> {
-                    sleep(1000);
-                    System.out.println("Received MyItem " + item.id + "\n");
-                });
+    private static void coldObservableExample() {
+        Observable observable = Observable.just('a', 'b', 'c');
+
+        observable.subscribe((item) -> System.out.println("Observer 1 - " + item));
+        observable.subscribe((item) -> System.out.println("Observer 2 - " + item));
+        observable.subscribe((item) -> System.out.println("Observer 3 - " + item));
     }
 
-    private static void asyncObservableExample() {
-        Observable.range(1, 1000000)
-                .map(Item::new)
-                .observeOn(Schedulers.io())
-                .subscribe(item -> {
-                    sleep(1000);
-                    System.out.println("Received MyItem " + item.id + "\n");
-                });
+    private static void hotObservableExample() throws InterruptedException {
+        ConnectableObservable observable = Observable.interval(1, TimeUnit.SECONDS)
+                .publish();
 
-        try {
-            sleep(Long.MAX_VALUE);
-        }catch (InterruptedException e){
-            e.printStackTrace();
-        }
-    }
+        observable.connect();
 
-    private static void asyncFlowableExample(){
-        Flowable.range(1,1000000)
-                .map(Item::new)
-                .observeOn(Schedulers.io())
-                .subscribe(item -> {
-                    sleep(1000);
-                    System.out.println("Received MyItem " + item.id + "\n");
-                });
+        observable.subscribe((item) -> {
+            System.out.println("Observer 1 - sec: " + item);
+        });
 
-        try {
-            sleep(Long.MAX_VALUE);
-        }catch (InterruptedException e){
-            e.printStackTrace();
-        }
-    }
-}
+        Thread.sleep(5000);
 
-class Item {
-    int id;
+        observable.subscribe((item) -> {
+            System.out.println("Observer 2 - sec: " + item);
+        });
 
-    public Item(int id) {
-        this.id = id;
-        System.out.println("Item is created " + id);
+        Thread.sleep(10000);
     }
 }
